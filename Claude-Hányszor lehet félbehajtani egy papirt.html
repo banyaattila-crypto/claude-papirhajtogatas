@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hányszor lehet félbehajtani egy papírt?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=JetBrains+Mono:wght@400;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Irány: mérnöki kockás füzetlap, amely a számlálóban csillagos éggé sötétül; a többi felület csendes. */
+  --bg:#efe9f7;
+  --card:rgba(255,255,255,.58);
+  --ink:#121c26;
+  --muted:#596773;
+  --rule:#cfd2e8;
+  --accent:#2440d6;
+  --limit:#c8273a;
+  --ok:#1d8559;
+  --f-display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{position:relative;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.55;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(900px 600px at 8% 0%,rgba(255,205,225,.75),transparent 70%),radial-gradient(900px 650px at 100% 12%,rgba(205,200,255,.75),transparent 70%),radial-gradient(1000px 700px at 0% 100%,rgba(190,235,220,.7),transparent 70%),radial-gradient(800px 600px at 100% 100%,rgba(255,225,200,.6),transparent 70%),linear-gradient(160deg,#f7ecf6,#e9eefb 55%,#e6f5f1)}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+.wrap{max-width:1240px;margin:0 auto;padding:0 24px}
+@media (max-width:520px){.wrap{padding:0 16px}body{font-size:17px}}
+
+/* ---------- fejléc ---------- */
+header{padding:48px 0 28px}
+.eyebrow{font-family:var(--f-mono);font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+h1{font-family:var(--f-display);font-stretch:68%;font-weight:850;font-size:clamp(44px,8.4vw,112px);line-height:.9;letter-spacing:-.01em;margin:0;text-transform:uppercase;text-wrap:balance}
+h1 .fold{display:inline-block;color:var(--accent);transform-origin:50% 100%}
+.lead{max-width:62ch;font-size:clamp(18px,1.6vw,21px);margin:22px 0 0;color:var(--ink)}
+h2{font-family:var(--f-display);font-stretch:75%;font-weight:800;font-size:clamp(30px,4vw,48px);line-height:1;letter-spacing:-.005em;text-transform:uppercase;margin:0 0 14px;text-wrap:balance}
+h3{font-family:var(--f-display);font-stretch:90%;font-weight:700;font-size:20px;margin:0 0 6px}
+section{padding:44px 0}
+.sec-head{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin-bottom:22px}
+.sec-head p{max-width:68ch;margin:0;color:var(--muted)}
+.secno{font-family:var(--f-mono);font-size:13px;color:var(--accent);letter-spacing:.06em}
+
+/* ---------- számláló ---------- */
+.stage{position:relative;border-radius:18px;overflow:hidden;min-height:340px;background:linear-gradient(135deg,#ffdeec,#e6dcff 55%,#cce8fa);--s-ink:#121c26;--s-muted:#4f5d69;--s-acc:#2440d6;transition:color .3s;border:1px solid var(--rule)}
+.stage.dark{--s-ink:#eef1ff;--s-muted:#aab4d4;--s-acc:#8fa2ff;border-color:#1c2340}
+.stage canvas.bgc{position:absolute;inset:0;width:100%;height:100%;display:block}
+.stage-in{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px 44px;padding:30px 34px 26px;color:var(--s-ink)}
+.stage-in *{text-shadow:none}
+.stage.mid .stage-in{text-shadow:0 0 12px rgba(0,0,0,.35)}
+.bign{font-family:var(--f-display);font-stretch:125%;font-weight:900;font-size:clamp(96px,15vw,200px);line-height:.8;font-variant-numeric:tabular-nums;letter-spacing:-.04em;color:var(--s-ink);min-width:2.1ch;text-align:right}
+.bign small{display:block;font-family:var(--f-mono);font-size:14px;font-weight:400;letter-spacing:.08em;text-transform:uppercase;color:var(--s-muted);margin-top:14px;text-align:right}
+.readout{align-self:center;min-width:0}
+.lbl{font-family:var(--f-mono);font-size:13px;letter-spacing:.07em;text-transform:uppercase;color:var(--s-muted)}
+.thick{font-family:var(--f-display);font-stretch:80%;font-weight:800;font-size:clamp(40px,6vw,78px);line-height:1;font-variant-numeric:tabular-nums;margin:6px 0 10px;overflow-wrap:anywhere}
+.thick .u{font-weight:500;font-size:.48em;margin-left:.25em;color:var(--s-muted)}
+.compare{font-size:clamp(17px,1.7vw,21px);max-width:52ch;margin:0}
+.compare b{color:var(--s-acc)}
+.layers{font-family:var(--f-mono);font-size:14px;color:var(--s-muted);margin-top:8px}
+.controls{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:14px}
+.controls input[type=range]{flex:1 1 260px;min-width:200px;accent-color:var(--s-acc);height:28px}
+.btn{font-family:var(--f-mono);font-size:14px;border:1.5px solid currentColor;background:transparent;color:inherit;border-radius:999px;padding:8px 16px;cursor:pointer;line-height:1.1;transition:background .15s,color .15s}
+.btn:hover{background:rgba(127,140,170,.16)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.stage .btn.primary{background:var(--s-acc);border-color:var(--s-acc);color:#0b0f1e}
+.stage:not(.dark) .btn.primary{color:#fff}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.ticks{grid-column:1/-1;display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:12px;color:var(--s-muted);padding:0 2px;margin-top:-6px}
+@media (max-width:760px){
+  .stage-in{grid-template-columns:minmax(0,1fr);padding:22px 18px}
+  .bign{text-align:left}.bign small{text-align:left}
+}
+
+/* ---------- képletek + diagram ---------- */
+.duo{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:20px;margin-top:20px;align-items:start}
+@media (max-width:980px){.duo{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:22px 24px}
+@media (max-width:520px){.card{padding:18px 16px}}
+.frow{display:grid;grid-template-columns:150px minmax(0,1fr);gap:4px 18px;padding:14px 0;border-top:1px solid var(--rule)}
+.frow:first-of-type{border-top:0;padding-top:4px}
+@media (max-width:560px){.frow{grid-template-columns:minmax(0,1fr)}}
+.flabel{font-family:var(--f-display);font-stretch:85%;font-weight:700;font-size:16px;line-height:1.25}
+.flabel span{display:block;font-family:var(--f-mono);font-weight:400;font-size:12px;color:var(--muted);margin-top:3px;letter-spacing:.02em}
+.fmath{font-family:var(--f-mono);font-size:15px;line-height:1.7;overflow-x:auto;min-width:0}
+.fmath .s{color:var(--muted)}
+.fmath .r{font-weight:600;font-size:17px;color:var(--ink)}
+.fmath sup{font-size:.72em;line-height:0}
+.chip{display:inline-block;font-family:var(--f-mono);font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;margin-left:8px;vertical-align:2px;white-space:nowrap}
+.chip.ok{background:#e1f3ea;color:#11633f}
+.chip.no{background:#fbe3e6;color:#9b1528}
+.chip.na{background:#eceff2;color:var(--muted)}
+.note{font-size:14px;color:var(--muted);margin:12px 0 0}
+.chart-wrap{position:relative}
+#chart{width:100%;display:block;touch-action:none;cursor:crosshair}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-family:var(--f-mono);font-size:12px;color:var(--muted);margin:10px 0 0}
+.legend i{display:inline-block;width:22px;height:3px;vertical-align:4px;margin-right:6px;border-radius:2px}
+
+/* ---------- létra ---------- */
+.ladder{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.ladder li{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--rule);border-radius:10px;padding:10px 14px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:baseline;cursor:pointer;transition:border-color .2s,background .2s}
+.ladder li:hover{background:rgba(255,255,255,.85)}
+.ladder li.on{border-left-color:var(--accent)}
+.ladder li.cur{background:rgba(214,222,255,.9);border-color:var(--accent)}
+.ladder .nm{font-weight:600;font-size:16px;line-height:1.25}
+.ladder .sz{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);grid-column:1}
+.ladder .nn{font-family:var(--f-display);font-stretch:110%;font-weight:800;font-size:24px;grid-row:1/3;grid-column:2;align-self:center;font-variant-numeric:tabular-nums}
+.ladder li.on .nn{color:var(--accent)}
+
+/* ---------- keresztmetszet ---------- */
+.why{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:28px;align-items:start}
+@media (max-width:980px){.why{grid-template-columns:minmax(0,1fr)}}
+.prose p{margin:0 0 14px;max-width:64ch}
+.deriv{font-family:var(--f-mono);font-size:14.5px;line-height:1.85;background:rgba(255,255,255,.55);border:1px solid var(--rule);border-radius:10px;padding:14px 16px;overflow-x:auto;margin:6px 0 14px}
+.deriv sup,.deriv sub{font-size:.72em;line-height:0}
+#xs{width:100%;display:block;border-radius:10px;background:linear-gradient(135deg,#fff1f7,#ece9ff 55%,#e6f7f1);border:1px solid var(--rule)}
+.seg{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 4px}
+.seg button{font-family:var(--f-mono);font-size:14px;min-width:42px;padding:6px 10px;border-radius:8px;border:1.5px solid var(--rule);background:var(--card);color:var(--ink);cursor:pointer}
+.seg button[aria-pressed=true]{border-color:var(--accent);background:var(--accent);color:#fff}
+.cap{font-size:14px;color:var(--muted);margin:6px 0 0}
+
+/* ---------- 3D ---------- */
+.simbox{position:relative;border-radius:16px;overflow:hidden;background:#0f171a;height:min(64vh,620px);min-height:380px;border:1px solid #23302f}
+#sim{position:absolute;inset:0}
+#sim canvas{display:block;width:100%;height:100%}
+.hud{position:absolute;left:16px;top:14px;right:16px;display:flex;flex-wrap:wrap;gap:8px 20px;pointer-events:none;color:#e9f0ec;font-family:var(--f-mono);font-size:13px}
+.hud b{font-family:var(--f-display);font-stretch:110%;font-size:26px;font-weight:800;display:block;line-height:1;margin-top:2px;font-variant-numeric:tabular-nums}
+.hud .k{color:#9db3aa;letter-spacing:.05em;text-transform:uppercase;font-size:11.5px}
+.hud .st{align-self:flex-start;margin-left:auto;padding:4px 10px;border-radius:999px;font-weight:600;font-size:12px}
+.hud .st.ok{background:rgba(29,133,89,.85)}
+.hud .st.no{background:rgba(200,39,58,.9)}
+.simctl{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;align-items:center}
+.simnote{font-size:15px;color:var(--muted);margin:10px 0 0;max-width:80ch}
+.sim-err{color:#e9f0ec;padding:24px;font-family:var(--f-mono)}
+
+/* ---------- érdekességek ---------- */
+.tl{position:relative;display:grid;gap:14px;margin:0;padding:0;list-style:none}
+.tl li{display:grid;grid-template-columns:150px minmax(0,1fr);gap:18px;background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:18px 22px}
+@media (max-width:640px){.tl li{grid-template-columns:minmax(0,1fr);gap:6px}}
+.when{font-family:var(--f-display);font-stretch:80%;font-weight:800;font-size:26px;line-height:1.05;color:var(--accent)}
+.when span{display:block;font-family:var(--f-mono);font-weight:400;font-size:12px;color:var(--muted);letter-spacing:.04em;margin-top:4px;text-transform:uppercase}
+.tl p{margin:0 0 8px;max-width:72ch}
+.tl p:last-child{margin-bottom:0}
+.tl .big{font-family:var(--f-display);font-stretch:75%;font-weight:800;font-size:22px;color:var(--ink)}
+.pull{font-style:italic;color:var(--muted)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:22px}
+.fact{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:18px 20px}
+.fact .fig{font-family:var(--f-display);font-stretch:110%;font-weight:850;font-size:34px;line-height:1;color:var(--accent);margin-bottom:8px;font-variant-numeric:tabular-nums}
+.fact .fig sup{font-size:.55em}
+.fact p{margin:0;font-size:16px}
+
+footer{padding:36px 0 60px;border-top:1px solid var(--rule);margin-top:20px}
+footer h2{font-size:26px}
+footer ol{padding-left:22px;margin:0;columns:2 360px;column-gap:40px;font-size:15px}
+footer li{margin:0 0 6px;break-inside:avoid}
+footer .note{max-width:80ch}
+
+.card,.ladder li,.tl li,.fact{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <p class="eyebrow">Exponenciális növekedés · Gallivan-képletek · 3D-szimuláció</p>
+  <h1>Hányszor lehet <span class="fold">félbe</span>hajtani egy papírt?</h1>
+  <p class="lead">Minden hajtás megduplázza a köteg vastagságát, a hajtáshoz szükséges papír mennyisége viszont négyszereződik. Húzd a csúszkát 100-ig: a 0,1 mm-es irodai lapból előbb toronyház, aztán Hold-távolság, végül több milliárd fényév vastag köteg lesz, legalábbis papíron.</p>
+</header>
+
+<main>
+<!-- 1. MATEMATIKA -->
+<section class="wrap" id="matek" style="padding-top:8px">
+  <div class="stage" id="stage">
+    <canvas class="bgc" id="stagebg" aria-hidden="true"></canvas>
+    <div class="stage-in">
+      <div class="bign"><span id="nBig">0</span><small>hajtás</small></div>
+      <div class="readout">
+        <div class="lbl">A köteg vastagsága</div>
+        <div class="thick" id="thick">0,1<span class="u">mm</span></div>
+        <p class="compare" id="compare">Egyetlen irodai papírlap.</p>
+        <div class="layers" id="layersLine">2<sup>0</sup> = 1 réteg</div>
+      </div>
+      <div class="controls">
+        <button class="btn" id="minus" aria-label="Egy hajtással kevesebb">−1</button>
+        <label for="nSlider" class="lbl" style="position:absolute;left:-9999px">Hajtások száma</label>
+        <input type="range" id="nSlider" min="0" max="100" step="1" value="0">
+        <button class="btn" id="plus" aria-label="Egy hajtással több">+1</button>
+        <button class="btn primary" id="play">Lejátszás 0 → 100</button>
+      </div>
+      <div class="ticks" aria-hidden="true"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
+    </div>
+  </div>
+
+  <div class="duo">
+    <div class="card" id="formulas" aria-live="polite">
+      <h3>Képletek, élő behelyettesítéssel</h3>
+      <div id="frows"></div>
+      <p class="note">Bemenő adatok: t = 0,1 mm lapvastagság (80 g/m²-es irodai papír), A4-es lap 297 × 210 mm. A váltott irányú Gallivan-képlet négyzetes lapra vonatkozik; itt az A4 rövidebb oldalával vetjük össze, ez közelítés.</p>
+    </div>
+    <div class="card">
+      <h3>Logaritmikus skálán az exponenciális egyenes</h3>
+      <div class="chart-wrap"><canvas id="chart" aria-label="A köteg vastagsága és a szükséges lapméret a hajtások számának függvényében, logaritmikus skálán"></canvas></div>
+      <div class="legend">
+        <span><i style="background:var(--accent)"></i>vastagság, h = t·2<sup>n</sup></span>
+        <span><i style="background:var(--limit)"></i>szükséges lapszélesség, W (Gallivan)</span>
+        <span>kattints vagy húzd az ujjad a grafikonon</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KOZMIKUS LÉTRA -->
+<section class="wrap" id="letra" style="padding-top:12px">
+  <div class="sec-head">
+    <span class="secno">Kozmikus létra</span>
+    <p>Hány hajtás kell, hogy a köteg elérje az adott méretet? Kattints egy fokra, és a számláló odaugrik.</p>
+  </div>
+  <ul class="ladder" id="ladder"></ul>
+</section>
+
+<!-- 2. MIÉRT 4^n -->
+<section class="wrap" id="miert">
+  <div class="sec-head">
+    <span class="secno">Miért akad el mindenki hétnél?</span>
+    <h2>A hajlítás megeszi a papírt</h2>
+  </div>
+  <div class="why">
+    <div class="prose">
+      <p>A „túl vastag lesz” magyarázat csak félig igaz. A valódi korlát a hajtásél: ott a rétegek félkörívben fordulnak át egymáson, és a külső rétegek egyre nagyobb sugarú íven kerülnek meg minden belső réteget. Ez a papír elvész a hajtás számára.</p>
+      <p>Az <i>i</i>-edik hajtásnál a köteg 2<sup>i−1</sup> rétegű. A <i>k</i>-adik réteg nagyjából <i>k·t</i> sugarú félkört ír le, ez π·k·t hosszú. Összegezve:</p>
+      <div class="deriv">
+        ΔL<sub>i</sub> ≈ π·t·(1 + 2 + … + 2<sup>i−1</sup>) ≈ ½·π·t·4<sup>i−1</sup><br>
+        L ≈ Σ<sub>i=1..n</sub> ½·π·t·4<sup>i−1</sup> = (π·t/6)·(4<sup>n</sup> − 1)<br>
+        Gallivan pontos képlete: L = (π·t/6)·(2<sup>n</sup> + 4)·(2<sup>n</sup> − 1)
+      </div>
+      <p>A becslés vezető tagja (π·t/6)·4<sup>n</sup>, pontosan egyezik Gallivan képletével. A vastagság tehát 2<sup>n</sup>, a szükséges papírhossz 4<sup>n</sup> szerint nő. Minden újabb hajtáshoz nagyjából négyszer hosszabb szalag kell, mint az előzőhöz.</p>
+      <p>Ellenpróba A4-re: W(7) = π · 0,1 mm · 2<sup>9</sup> ≈ 161 mm, ez belefér a 210 mm-be. W(8) = π · 0,1 mm · 2<sup>10,5</sup> ≈ 455 mm, ez már nem fér bele. A játszótéri „hétszer lehet” szabály egy szabványos lapra meglepően pontos.</p>
+    </div>
+    <div>
+      <canvas id="xs" aria-label="Egy irányban hajtogatott szalag keresztmetszete: a rétegek és a hajtásívek"></canvas>
+      <div class="seg" id="xsSeg" role="group" aria-label="Hajtások száma a keresztmetszeten"></div>
+      <p class="cap" id="xsCap"></p>
+    </div>
+  </div>
+</section>
+
+<!-- 3. 3D SZIMULÁCIÓ -->
+<section class="wrap" id="szimulacio">
+  <div class="sec-head">
+    <span class="secno">Hajtogatás 3D-ben</span>
+    <h2>Egy A4-es lap, valódi arányokkal</h2>
+    <p>Minden hajtás a hosszabb oldalt felezi, a rétegek az élen csíkként látszanak. A méretarány nincs torzítva: 0,1 mm vastag, 297 × 210 mm-es lappal indulunk. Egérrel forgatható, görgővel nagyítható.</p>
+  </div>
+  <div class="simbox">
+    <div id="sim"></div>
+    <div class="hud" aria-live="polite">
+      <div><span class="k">hajtás</span><b id="hN">0</b></div>
+      <div><span class="k">rétegek</span><b id="hL">1</b></div>
+      <div><span class="k">vastagság</span><b id="hT">0,1 mm</b></div>
+      <div><span class="k">alapterület</span><b id="hA">297 × 210 mm</b></div>
+      <span class="st ok" id="hS">Gallivan szerint kivitelezhető</span>
+    </div>
+  </div>
+  <div class="simctl">
+    <button class="btn primary" id="sFold">Hajtás +1</button>
+    <button class="btn" id="sUnfold">Kihajtás −1</button>
+    <button class="btn" id="sAuto">Automatikus hajtogatás</button>
+    <button class="btn" id="sReset">Alaphelyzet</button>
+    <button class="btn" id="sFrame">Nézet igazítása</button>
+  </div>
+  <p class="simnote" id="simNote">A 3D-modell 14 hajtásig megy. Ott a köteg 1,64 m magas, az alapja 2,3 × 1,6 mm. Ezt már semmilyen papír nem bírná, a folytatás a fenti logaritmikus grafikonon látszik.</p>
+</section>
+
+<!-- 4. ÉRDEKESSÉGEK -->
+<section class="wrap" id="tortenet">
+  <div class="sec-head">
+    <span class="secno">Anekdoták és rekordok</span>
+    <h2>Akik nem hitték el a hetet</h2>
+  </div>
+  <ol class="tl">
+    <li><div class="when">Ősi legenda<span>sakktábla</span></div><div>
+      <p>A sakk feltalálója a legenda szerint annyi rizsszemet kért jutalmul, amennyi úgy jön ki, hogy az első mezőre egyet, minden következőre kétszer annyit tesznek. A király kinevette, aztán kiderült, hogy a 64 mező összesen 2<sup>64</sup> − 1 ≈ 1,8·10<sup>19</sup> szemet jelent, ez nagyságrendekkel több az emberiség teljes rizstermésénél. A papírhajtogatás ugyanez a duplázás, csak vastagságban.</p></div></li>
+    <li><div class="when">2001<span>aranyfólia</span></div><div>
+      <p>Britney Gallivan, a kaliforniai Pomona középiskolása, matekórai pluszpontos feladatot kapott: hajtson félbe bármit tizenkétszer. Egy 4 × 4 hüvelykes (kb. 10 × 10 cm) aranyfóliával oldotta meg, amely mindössze 11 milliomod hüvelyk (kb. 0,28 µm) vastag, vagyis vékonyabb a látható fény hullámhosszánál. Ecsettel és csipesszel dolgozott.</p>
+      <p>A tanára erre azt mondta, hogy rosszul fogalmazott: papírt kell 12-szer félbehajtani.</p></div></li>
+    <li><div class="when">2002. jan. 27.<span>Pomona, Kalifornia</span></div><div>
+      <p class="big">12 hajtás, 1219 m papír, kb. 8 óra</p>
+      <p>Gallivan nem próbálkozott tovább vaktában: levezette a két korlátképletet (egyirányú és váltott irányú hajtásra), és kiszámolta, hogy 12 hajtáshoz egy irányban kb. 1,2 km hosszú, nagyon vékony papír kell. Egy speciális, tekercsenként 85 dolláros WC-papírt talált, majd egy bevásárlóközpont folyosóján, nagyjából nyolc óra kúszás után megcsinálta. A Guinness szerint ő hajtott elsőként 9-szer, 10-szer, 11-szer és 12-szer félbe papírt. A módszert <i>How to Fold Paper in Half Twelve Times</i> című füzetében írta le.</p></div></li>
+    <li><div class="when">2007<span>MythBusters (Állítólag)</span></div><div>
+      <p>A Mythbusters (magyarul Állítólag) című sorozat is foglalkozott a kérdéssel az 5. évad „Underwater Car” részében. Normál lappal ők is elakadtak hétnél, ezért a NASA egyik hangárjában összeállítottak egy focipálya méretű papírt. Emberi erővel nyolcszor tudták félbehajtani, egy targonca és egy úthenger bevetésével pedig 11-szer. Az úthenger a rétegek közé szorult levegőt préselte ki.</p>
+      <p class="pull">Megjegyzés: ők váltott irányban hajtogattak, ehhez Gallivan képlete szerint óriási felület kell. Az egyirányú, hosszú szalag sokkal anyagtakarékosabb.</p></div></li>
+    <li><div class="when">2011. április<span>MIT, Infinite Corridor</span></div><div>
+      <p>James Tanton matematikatanár 15 diákja a massachusettsi St. Mark's Schoolból évek óta próbálta megdönteni a rekordot. Az MIT origamiklubja, az OrigaMIT segítségével bejutottak a 251 m-es „végtelen folyosóra”, ahol nem zavart a szél. Kb. 4 km (13 000 láb) WC-papírral elérték a 12 hajtást, de a 13. hajtást a klub elnöke, Jason Ku érvénytelennek minősítette, mert a köteg nem maradt meg magától összehajtva.</p></div></li>
+    <li><div class="when">2011. december<span>13 hajtás</span></div><div>
+      <p class="big">16 km összeragasztott WC-papír, 13 hajtás</p>
+      <p>Második nekifutásra kb. 16 km (54 000 láb) papírt ragasztottak össze, és 13-szor hajtották félbe. A végeredmény nagyjából 1,5 m hosszú köteg lett. A rekord vitatott: a szalag ragasztott, és az első 64 réteget (6 hajtásnyit) eleve egymásra fektetve rakták össze. A Guinness-rekord ezért továbbra is Gallivané.</p></div></li>
+    <li><div class="when">2016<span>hidraulikus prés</span></div><div>
+      <p>A Hydraulic Press Channel egy A3-as lapot préssel hajtott hétszer. A papír a végén szinte szétrobbant: a préselt köteg kőkemény lett, és szilánkosan tört. Hét hajtás után 2<sup>7</sup> = 128 réteg volt egymáson.</p></div></li>
+  </ol>
+
+  <div class="facts" id="facts"></div>
+</section>
+</main>
+
+<footer class="wrap">
+  <h2>Források</h2>
+  <ol>
+    <li><a href="https://guinnessworldrecords.com/world-records/494571-most-times-to-fold-a-piece-of-paper">Guinness World Records: Most times to fold a piece of paper</a></li>
+    <li><a href="https://guinnessworldrecords.com/humix/v/britney-gallivans-record-breaking-paper-folding-feat">Guinness: Britney Gallivan's Record-Breaking Paper Folding Feat (videó)</a></li>
+    <li><a href="https://www.sciencenews.org/article/folding-paper-half-twelve-times">Science News: Folding Paper in Half — Twelve Times</a></li>
+    <li><a href="https://www.mathscareers.org.uk/?p=7609">Maths Careers: Gallivan's paper folding equation</a></li>
+    <li><a href="https://www.npr.org/sections/thetwo-way/2011/12/05/143150449/record-folders-54-000-feet-of-paper-13-folds-one-new-standard">NPR: Record Folders: 54,000 Feet Of Paper; 13 Folds</a></li>
+    <li><a href="https://alum.mit.edu/node/1612">MIT Slice: St. Mark's toilet paper folding</a></li>
+    <li><a href="https://www.mentalfloss.com/article/62865/how-many-times-can-you-fold-piece-paper">Mental Floss: How Many Times Can You Fold a Piece of Paper?</a></li>
+    <li><a href="https://thetvdb.com/series/mythbusters/episodes/315959">TheTVDB: MythBusters, Underwater Car (S05)</a></li>
+    <li><a href="https://www.iflscience.com/why-does-paper-appear-explode-when-its-folded-eight-times-34521">IFLScience: Hydraulic press folds paper seven times</a></li>
+    <li><a href="https://www.youtube.com/watch?v=yjr6PDWEkO8">LMzem: Hányszor lehet félbehajtani egy papírt? (YouTube)</a></li>
+  </ol>
+  <p class="note">Minden számított érték (vastagság, W, L, a létra fokai) az oldalon futó kódból jön, t = 0,1 mm-rel. Fényév = 9,4607·10<sup>15</sup> m, CSE (csillagászati egység) = 1,496·10<sup>11</sup> m. A csillagászati távolságok kerekítettek.</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(() => {
+"use strict";
+/* ================= alapok ================= */
+const T = 1e-4;                 // lapvastagság [m]
+const A4 = {a: 0.297, b: 0.210};
+const LY = 9.4607e15, AU = 1.495978707e11;
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+const SUP = {'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+const supU = n => String(n).split('').map(c => SUP[c] || c).join('');
+
+function fmt(x, sig = 3) {
+  if (!isFinite(x)) return '∞';
+  if (x === 0) return '0';
+  const ax = Math.abs(x);
+  if (ax >= 1e-3 && ax < 1e7) {
+    const v = Number(x.toPrecision(sig));
+    const d = clamp(sig - 1 - Math.floor(Math.log10(Math.abs(v))), 0, 6);
+    return new Intl.NumberFormat('hu-HU', {maximumFractionDigits: d}).format(v);
+  }
+  let e = Math.floor(Math.log10(ax));
+  let m = Number((x / Math.pow(10, e)).toPrecision(sig));
+  if (Math.abs(m) >= 10) { m /= 10; e++; }
+  return new Intl.NumberFormat('hu-HU', {maximumFractionDigits: sig - 1}).format(m) + '·10' + supU(e);
+}
+function lenParts(m) {
+  if (m < 0.01) return [fmt(m * 1000), 'mm'];
+  if (m < 1) return [fmt(m * 100), 'cm'];
+  if (m < 1000) return [fmt(m), 'm'];
+  if (m < 1e9) return [fmt(m / 1000), 'km'];
+  if (m < 0.1 * LY) return [fmt(m / AU), 'CSE'];
+  const ly = m / LY;
+  if (ly < 1e6) return [fmt(ly), 'fényév'];
+  if (ly < 1e9) return [fmt(ly / 1e6), 'millió fényév'];
+  if (ly < 1e12) return [fmt(ly / 1e9), 'milliárd fényév'];
+  return [fmt(ly), 'fényév'];
+}
+const fmtLen = m => lenParts(m).join(' ');
+function fmtInt(n) { // 2^n
+  if (n <= 33) return new Intl.NumberFormat('hu-HU').format(2 ** n);
+  return fmt(2 ** n, 4);
+}
+const thick = n => T * 2 ** n;
+const gW = n => Math.PI * T * Math.pow(2, 3 * (n - 1) / 2);
+const gL = n => Math.PI * T / 6 * (2 ** n + 4) * (2 ** n - 1);
+function a4dims(n) { let a = A4.a, b = A4.b; for (let i = 0; i < n; i++) { if (a >= b) a /= 2; else b /= 2; } return [a, b]; }
+
+const MARKS = [
+  {nm: 'Egy vastag könyv', m: 0.04, sz: '4 cm'},
+  {nm: 'Ember', m: 1.75, sz: '1,75 m'},
+  {nm: 'Országház, Szent István-bazilika', m: 96, sz: '96 m'},
+  {nm: 'Burdzs Kalifa', m: 828, sz: '828 m'},
+  {nm: 'Mount Everest', m: 8849, sz: '8 849 m'},
+  {nm: 'Kármán-vonal (az űr határa)', m: 1e5, sz: '100 km'},
+  {nm: 'A Föld átmérője', m: 1.2742e7, sz: '12 742 km'},
+  {nm: 'Föld–Hold távolság', m: 3.844e8, sz: '384 400 km'},
+  {nm: 'Föld–Nap távolság', m: AU, sz: '1 CSE ≈ 149,6 millió km'},
+  {nm: 'Neptunusz pályája', m: 30.1 * AU, sz: 'kb. 30 CSE'},
+  {nm: 'Proxima Centauri', m: 4.24 * LY, sz: '4,24 fényév'},
+  {nm: 'A Tejútrendszer átmérője', m: 1e5 * LY, sz: 'kb. 100 000 fényév'},
+  {nm: 'Androméda-galaxis', m: 2.5e6 * LY, sz: 'kb. 2,5 millió fényév'},
+  {nm: 'A megfigyelhető univerzum átmérője', m: 9.3e10 * LY, sz: 'kb. 93 milliárd fényév'}
+];
+MARKS.forEach(k => k.need = Math.ceil(Math.log2(k.m / T)));
+
+/* ================= állapot ================= */
+let N = 0;
+const $ = id => document.getElementById(id);
+const slider = $('nSlider');
+
+function compareText(n) {
+  const h = thick(n);
+  let best = null;
+  for (const k of MARKS) if (k.m <= h) best = k;
+  if (n === 0) return 'Egyetlen irodai papírlap.';
+  if (!best) return `Olyan vastag, mint <b>${fmtInt(n)} lap</b> egymásra rakva.`;
+  const r = h / best.m;
+  const rs = r < 1.95 ? 'A köteg nagyjából ekkora.' : `A köteg ennek kb. <b>${fmt(r, 2)}-szorosa</b>.`;
+  const next = MARKS.find(k => k.m > h);
+  const tail = next ? ` Következő mérce: ${next.nm} (${next.need}. hajtás).` : ' Ennél nagyobb mérce már nincs.';
+  return `Legutóbb elért mérce: <b>${best.nm}</b> (${best.sz}). ${rs}${tail}`;
+}
+
+function setN(n, from) {
+  N = clamp(Math.round(n), 0, 100);
+  if (from !== 'slider') slider.value = N;
+  slider.setAttribute('aria-valuetext', `${N} hajtás, ${fmtLen(thick(N))}`);
+  $('nBig').textContent = N;
+  const [v, u] = lenParts(thick(N));
+  $('thick').innerHTML = `${v}<span class="u">${u}</span>`;
+  $('compare').innerHTML = compareText(N);
+  $('layersLine').innerHTML = `2<sup>${N}</sup> = ${fmtInt(N)} réteg`;
+  renderFormulas();
+  drawStage();
+  drawChart();
+  renderLadder();
+}
+
+/* ================= képletek ================= */
+function renderFormulas() {
+  const n = N;
+  const [a, b] = a4dims(n);
+  const W = gW(n), L = gL(n);
+  const feasible = n === 0 ? null : W <= A4.b;
+  const chip = feasible === null ? '<span class="chip na">nincs hajtás</span>'
+    : feasible ? '<span class="chip ok">A4-ből kijön</span>' : '<span class="chip no">A4-ből nem jön ki</span>';
+  const e3 = new Intl.NumberFormat('hu-HU', {maximumFractionDigits: 1}).format(3 * (n - 1) / 2);
+  const ratio = n >= 2 ? `<span class="s">L(${n}) / L(${n - 1}) = ${new Intl.NumberFormat('hu-HU', {maximumFractionDigits: 3}).format(gL(n) / gL(n - 1))}, a határérték 4</span>` : '<span class="s">az arány a hajtások számával 4-hez tart</span>';
+  const area = A4.a * A4.b / 2 ** n;
+  const rows = [
+    ['Rétegszám', 'minden hajtás dupláz',
+      `<span class="s">N = 2<sup>n</sup></span><br>= 2<sup>${n}</sup><br><span class="r">= ${fmtInt(n)}</span>`],
+    ['Vastagság', 'exponenciális',
+      `<span class="s">h = t · 2<sup>n</sup></span><br>= 0,1 mm · 2<sup>${n}</sup><br><span class="r">= ${fmtLen(thick(n))}</span>`],
+    ['Lapméret', 'A4, mindig a hosszabb oldal felezve',
+      `<span class="s">A = A<sub>0</sub> / 2<sup>n</sup></span><br>= 297 × 210 mm / 2<sup>${n}</sup><br><span class="r">= ${fmtLen(a)} × ${fmtLen(b)}</span><br><span class="s">terület: ${fmt(area * 1e6)} mm²</span>`],
+    ['Gallivan, váltott irány', 'minimális lapszélesség',
+      `<span class="s">W = π · t · 2<sup>3(n−1)/2</sup></span><br>= π · 0,1 mm · 2<sup>${e3}</sup><br><span class="r">= ${fmtLen(W)}</span>${chip}`],
+    ['Gallivan, egy irány', 'minimális szalaghossz',
+      `<span class="s">L = (π·t/6) · (2<sup>n</sup> + 4) · (2<sup>n</sup> − 1)</span><br>= (π · 0,1 mm / 6) · (${fmtInt(n)} + 4) · (${fmtInt(n)} − 1)<br><span class="r">= ${n === 0 ? '0' : fmtLen(L)}</span><br>${ratio}`]
+  ];
+  $('frows').innerHTML = rows.map(r => `<div class="frow"><div class="flabel">${r[0]}<span>${r[1]}</span></div><div class="fmath">${r[2]}</div></div>`).join('');
+}
+
+/* ================= számláló háttere: papírból kozmosz ================= */
+const stage = $('stage'), sbg = $('stagebg');
+let stars = [];
+function makeStars() {
+  stars = [];
+  let s = 12345; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 420; i++) stars.push({x: rnd(), y: rnd(), r: rnd() ** 3 * 1.6 + 0.3, a: 0.35 + rnd() * 0.65, h: rnd()});
+}
+makeStars();
+function drawStage() {
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  const w = stage.clientWidth, h = stage.clientHeight;
+  if (!w || !h) return;
+  if (sbg.width !== Math.round(w * dpr) || sbg.height !== Math.round(h * dpr)) { sbg.width = Math.round(w * dpr); sbg.height = Math.round(h * dpr); }
+  const c = sbg.getContext('2d');
+  c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const lg = Math.log10(thick(N));
+  const m = clamp((lg - 1) / 25, 0, 1);          // 10 m → ~10^26 m
+  const e = smooth(0.18, 0.5, m);
+  const lerp3 = (p, q) => `rgb(${p.map((v, i) => Math.round(v + (q[i] - v) * e)).join(',')})`;
+  const bg = c.createLinearGradient(0, 0, w, h);
+  bg.addColorStop(0, lerp3([255, 222, 236], [8, 10, 26]));
+  bg.addColorStop(0.55, lerp3([230, 220, 255], [11, 10, 32]));
+  bg.addColorStop(1, lerp3([204, 232, 250], [6, 13, 28]));
+  c.fillStyle = bg;
+  c.fillRect(0, 0, w, h);
+  // kockás füzet rács
+  const ga = 1 - smooth(0.05, 0.45, m);
+  if (ga > 0.01) {
+    c.lineWidth = 1;
+    const step = 20;
+    for (let x = 0.5; x < w; x += step) { c.strokeStyle = `rgba(90,95,190,${0.14 * ga})`; c.beginPath(); c.moveTo(x, 0); c.lineTo(x, h); c.stroke(); }
+    for (let y = 0.5; y < h; y += step) { c.strokeStyle = `rgba(90,95,190,${0.14 * ga})`; c.beginPath(); c.moveTo(0, y); c.lineTo(w, y); c.stroke(); }
+    c.strokeStyle = `rgba(200,39,58,${0.35 * ga})`; c.beginPath(); c.moveTo(60.5, 0); c.lineTo(60.5, h); c.stroke();
+  }
+  // csillagok, köd
+  const sa = smooth(0.25, 0.85, m);
+  if (sa > 0.01) {
+    const g = c.createRadialGradient(w * 0.78, h * 0.4, 10, w * 0.78, h * 0.4, Math.max(w, h) * 0.6);
+    g.addColorStop(0, `rgba(96,84,200,${0.35 * smooth(0.6, 1, m)})`);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = g; c.fillRect(0, 0, w, h);
+    const visible = Math.floor(stars.length * smooth(0.2, 1, m));
+    for (let i = 0; i < visible; i++) {
+      const s = stars[i];
+      c.fillStyle = s.h > 0.85 ? `rgba(255,214,170,${s.a * sa})` : s.h > 0.7 ? `rgba(170,190,255,${s.a * sa})` : `rgba(255,255,255,${s.a * sa})`;
+      c.beginPath(); c.arc(s.x * w, s.y * h, s.r, 0, Math.PI * 2); c.fill();
+    }
+  }
+  stage.classList.toggle('dark', e > 0.5);
+  stage.classList.toggle('mid', e > 0.2 && e < 0.8);
+}
+
+/* ================= grafikon ================= */
+const chart = $('chart');
+const YMIN = -4.6, YMAX = 28;
+function chartGeom() {
+  const w = chart.clientWidth;
+  const h = clamp(Math.round(w * 0.82), 360, 560);
+  return {w, h, l: 80, r: w - 12, t: 14, b: h - 30};
+}
+function drawChart() {
+  const g = chartGeom();
+  if (!g.w) return;
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  chart.style.height = g.h + 'px';
+  if (chart.width !== Math.round(g.w * dpr) || chart.height !== Math.round(g.h * dpr)) { chart.width = Math.round(g.w * dpr); chart.height = Math.round(g.h * dpr); }
+  const c = chart.getContext('2d');
+  c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  c.clearRect(0, 0, g.w, g.h);
+  const X = n => g.l + (g.r - g.l) * n / 100;
+  const Y = lg => g.b - (g.b - g.t) * (lg - YMIN) / (YMAX - YMIN);
+  const css = getComputedStyle(document.documentElement);
+  const INK = css.getPropertyValue('--ink').trim(), MUT = css.getPropertyValue('--muted').trim(),
+        RULE = css.getPropertyValue('--rule').trim(), ACC = css.getPropertyValue('--accent').trim(), LIM = css.getPropertyValue('--limit').trim();
+  c.font = '11px "JetBrains Mono", monospace';
+  // tengelyrács: egységek
+  const yt = [[-3, '1 mm'], [0, '1 m'], [3, '1 km'], [6, '1000 km'], [Math.log10(AU), '1 CSE'], [Math.log10(LY), '1 fényév'], [Math.log10(LY * 1e3), '10³ fé'], [Math.log10(LY * 1e6), '10⁶ fé'], [Math.log10(LY * 1e9), '10⁹ fé']];
+  c.textAlign = 'right'; c.textBaseline = 'middle';
+  for (const [v, s] of yt) {
+    c.strokeStyle = RULE; c.lineWidth = 1; c.beginPath(); c.moveTo(g.l, Math.round(Y(v)) + .5); c.lineTo(g.r, Math.round(Y(v)) + .5); c.stroke();
+    c.fillStyle = MUT; c.fillText(s, g.l - 6, Y(v));
+  }
+  c.textAlign = 'center'; c.textBaseline = 'top';
+  for (let n = 0; n <= 100; n += 10) {
+    c.strokeStyle = RULE; c.beginPath(); c.moveTo(Math.round(X(n)) + .5, g.t); c.lineTo(Math.round(X(n)) + .5, g.b); c.stroke();
+    c.fillStyle = MUT; c.fillText(String(n), X(n), g.b + 6);
+  }
+  c.textAlign = 'right'; c.fillText('hajtás →', g.r, g.b + 18 > g.h - 12 ? g.b + 6 : g.b + 18);
+  // tereptárgyak
+  c.textBaseline = 'bottom';
+  for (const k of MARKS) {
+    const y = Y(Math.log10(k.m));
+    c.setLineDash([3, 4]); c.strokeStyle = N >= k.need ? 'rgba(36,64,214,.45)' : 'rgba(89,103,115,.35)';
+    c.beginPath(); c.moveTo(g.l, y); c.lineTo(g.r, y); c.stroke(); c.setLineDash([]);
+    c.fillStyle = N >= k.need ? ACC : MUT;
+    const left = k.need > 50;
+    c.textAlign = left ? 'left' : 'right';
+    const label = k.nm.length > 30 ? k.nm.replace('A megfigyelhető ', 'Megfigy. ') : k.nm;
+    c.fillText(label, left ? g.l + 6 : g.r - 4, y - 2);
+  }
+  // W görbe (klippelve)
+  c.save(); c.beginPath(); c.rect(g.l, g.t, g.r - g.l, g.b - g.t); c.clip();
+  c.strokeStyle = LIM; c.lineWidth = 2; c.setLineDash([7, 5]);
+  c.beginPath();
+  for (let n = 1; n <= 100; n += 0.5) { const p = [X(n), Y(Math.log10(gW(n)))]; n === 1 ? c.moveTo(...p) : c.lineTo(...p); }
+  c.stroke(); c.setLineDash([]);
+  // vastagság egyenes, kitöltéssel
+  const grad = c.createLinearGradient(0, g.t, 0, g.b);
+  grad.addColorStop(0, 'rgba(36,64,214,.16)'); grad.addColorStop(1, 'rgba(36,64,214,0)');
+  c.beginPath(); c.moveTo(X(0), Y(Math.log10(thick(0))));
+  for (let n = 0; n <= N; n++) c.lineTo(X(n), Y(Math.log10(thick(n))));
+  c.lineTo(X(N), g.b); c.lineTo(X(0), g.b); c.closePath(); c.fillStyle = grad; c.fill();
+  c.strokeStyle = 'rgba(36,64,214,.35)'; c.lineWidth = 2;
+  c.beginPath(); c.moveTo(X(0), Y(Math.log10(thick(0)))); c.lineTo(X(100), Y(Math.log10(thick(100)))); c.stroke();
+  c.strokeStyle = ACC; c.lineWidth = 3;
+  c.beginPath(); c.moveTo(X(0), Y(Math.log10(thick(0)))); c.lineTo(X(N), Y(Math.log10(thick(N)))); c.stroke();
+  c.restore();
+  // A4 rövidebb oldal jelölése
+  c.fillStyle = LIM; c.textAlign = 'left'; c.textBaseline = 'top';
+  const wx = X(8), wy = Y(Math.log10(gW(8)));
+  c.beginPath(); c.arc(wx, wy, 3.5, 0, 7); c.fill();
+  c.fillText('W(8) > 210 mm', wx + 7, wy + 2);
+  // aktuális pont
+  const px = X(N), py = Y(Math.log10(thick(N)));
+  c.strokeStyle = INK; c.lineWidth = 1; c.setLineDash([2, 3]);
+  c.beginPath(); c.moveTo(px, py); c.lineTo(px, g.b); c.stroke(); c.setLineDash([]);
+  c.fillStyle = '#fff'; c.strokeStyle = ACC; c.lineWidth = 3;
+  c.beginPath(); c.arc(px, py, 6.5, 0, 7); c.fill(); c.stroke();
+  const tag = `n = ${N}: ${fmtLen(thick(N))}`;
+  c.font = '600 12px "JetBrains Mono", monospace';
+  const tw = c.measureText(tag).width + 14;
+  let tx = px + 12, ty = py - 30;
+  if (tx + tw > g.r) tx = px - 12 - tw;
+  if (ty < g.t) ty = py + 12;
+  c.fillStyle = INK; roundRect(c, tx, ty, tw, 22, 6); c.fill();
+  c.fillStyle = '#fff'; c.textAlign = 'left'; c.textBaseline = 'middle'; c.fillText(tag, tx + 7, ty + 11);
+}
+function roundRect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+function chartPick(ev) {
+  const g = chartGeom(); const rect = chart.getBoundingClientRect();
+  const x = ev.clientX - rect.left;
+  setN((x - g.l) / (g.r - g.l) * 100);
+}
+let dragging = false;
+chart.addEventListener('pointerdown', e => { dragging = true; chart.setPointerCapture(e.pointerId); stopPlay(); chartPick(e); });
+chart.addEventListener('pointermove', e => { if (dragging) chartPick(e); });
+chart.addEventListener('pointerup', () => dragging = false);
+chart.addEventListener('pointercancel', () => dragging = false);
+
+/* ================= létra ================= */
+const ladder = $('ladder');
+ladder.innerHTML = MARKS.map((k, i) => `<li data-i="${i}" tabindex="0" role="button" aria-label="${k.nm}: ${k.need} hajtás"><span class="nm">${k.nm}</span><span class="sz">${k.sz}</span><span class="nn">${k.need}</span></li>`).join('');
+ladder.addEventListener('click', e => { const li = e.target.closest('li'); if (li) { stopPlay(); setN(MARKS[+li.dataset.i].need); $('matek').scrollIntoView({behavior: REDUCED ? 'auto' : 'smooth'}); } });
+ladder.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.closest('li')) { e.preventDefault(); e.target.click(); } });
+function renderLadder() {
+  let cur = -1;
+  MARKS.forEach((k, i) => { if (N >= k.need) cur = i; });
+  [...ladder.children].forEach((li, i) => { li.classList.toggle('on', N >= MARKS[i].need); li.classList.toggle('cur', i === cur); });
+}
+
+/* ================= vezérlők ================= */
+let playT = null;
+function stopPlay() { if (playT) { clearInterval(playT); playT = null; $('play').textContent = 'Lejátszás 0 → 100'; } }
+$('play').addEventListener('click', () => {
+  if (playT) { stopPlay(); return; }
+  if (N >= 100) setN(0);
+  $('play').textContent = 'Megállítás';
+  playT = setInterval(() => { if (N >= 100) { stopPlay(); return; } setN(N + 1); }, REDUCED ? 60 : 160);
+});
+$('minus').addEventListener('click', () => { stopPlay(); setN(N - 1); });
+$('plus').addEventListener('click', () => { stopPlay(); setN(N + 1); });
+slider.addEventListener('input', () => { stopPlay(); setN(+slider.value, 'slider'); });
+
+/* ================= tények ================= */
+(function facts() {
+  const [a, b] = a4dims(100);
+  const items = [
+    [`${MARKS[7].need}`, `hajtás után a 0,1 mm-es lap köteg elérné a Holdat: 0,1 mm · 2<sup>42</sup> ≈ ${fmtLen(thick(42))}.`],
+    [`${Math.ceil(Math.log2(AU / T))}`, `hajtás kell a Napig. Gallivan videójában 50 szerepel; a különbség a feltételezett lapvastagságból jön, 0,1 mm-rel 2<sup>50</sup> még csak ${fmtLen(thick(50))}.`],
+    [`${fmt(thick(100) / LY / 1e9, 3)} mrd`, `fényév a köteg 100 hajtás után. Nagyjából annyi fényév, ahány milliárd éves az Univerzum (13,8).`],
+    [`${fmt(2 ** 100, 3).replace('·10', '·10')}`, `réteg 100 hajtás után. Egy réteg mérete ${fmtLen(a)} × ${fmtLen(b)}, ez kb. tizede egy proton átmérőjének (1,7·10⁻¹⁵ m).`],
+    [`${fmtLen(gL(14))}`, `egyirányú szalag kellene 14 hajtáshoz (t = 0,1 mm). Minden újabb hajtás közel négyszerezi.`],
+    [`${fmtLen(gW(100))}`, `széles lap kellene 100 váltott irányú hajtáshoz, nagyságrendekkel nagyobb a megfigyelhető univerzumnál.`]
+  ];
+  $('facts').innerHTML = items.map(([f, t]) => `<div class="fact"><div class="fig">${f}</div><p>${t}</p></div>`).join('');
+})();
+
+/* ================= keresztmetszet (egyirányú hajtás) ================= */
+const xs = $('xs');
+let XN = 4;
+function stripSegs(n) {
+  let segs = [{l: 0, d: 1}];
+  for (let k = 0; k < n; k++) {
+    const L = 2 ** k, out = [];
+    for (const s of segs) {
+      const top = 2 * L - 1 - s.l;
+      if (s.d === 1) { out.push({l: s.l, d: 1}); out.push({l: top, d: -1}); }
+      else { out.push({l: top, d: 1}); out.push({l: s.l, d: -1}); }
+    }
+    segs = out;
+  }
+  return segs;
+}
+function drawXS() {
+  const w = xs.clientWidth; if (!w) return;
+  const h = clamp(Math.round(w * 0.62), 260, 440);
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  xs.style.height = h + 'px';
+  xs.width = Math.round(w * dpr); xs.height = Math.round(h * dpr);
+  const c = xs.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, w, h);
+  const segs = stripSegs(XN), L = 2 ** XN;
+  const s = Math.min((h - 40) / Math.max(L - 1, 1), 0.7 * (w - 40) / Math.max(L - 1, 1), 28);
+  const maxR = (L - 1) * s / 2;
+  const segLen = Math.max(w - 40 - 2 * maxR, w * 0.22);
+  const x0 = (w - segLen) / 2, x1 = x0 + segLen;
+  const base = h / 2 + (L - 1) * s / 2;
+  const Yl = l => base - l * s;
+  const lw = clamp(s * 0.55, 1.2, 5);
+  c.lineCap = 'round'; c.lineJoin = 'round';
+  // segédvonalak a straight tartományhoz
+  c.strokeStyle = '#d4dce1'; c.setLineDash([3, 4]); c.lineWidth = 1;
+  c.beginPath(); c.moveTo(x0, 10); c.lineTo(x0, h - 10); c.moveTo(x1, 10); c.lineTo(x1, h - 10); c.stroke(); c.setLineDash([]);
+  const total = segs.length;
+  const col = t => { const a = [36, 64, 214], b = [200, 39, 58]; return `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * t)).join(',')})`; };
+  let arcLen = 0;
+  for (let i = 0; i < total; i++) {
+    const sg = segs[i], y = Yl(sg.l);
+    c.strokeStyle = col(i / Math.max(total - 1, 1)); c.lineWidth = lw;
+    c.beginPath(); c.moveTo(sg.d === 1 ? x0 : x1, y); c.lineTo(sg.d === 1 ? x1 : x0, y); c.stroke();
+    if (i < total - 1) {
+      const nx = segs[i + 1], ya = y, yb = Yl(nx.l), right = sg.d === 1;
+      const cy = (ya + yb) / 2, r = Math.abs(ya - yb) / 2;
+      arcLen += Math.PI * r;
+      c.strokeStyle = col((i + 0.5) / Math.max(total - 1, 1));
+      c.beginPath();
+      if (right) c.arc(x1, cy, r, ya < yb ? -Math.PI / 2 : Math.PI / 2, ya < yb ? Math.PI / 2 : -Math.PI / 2, ya > yb);
+      else c.arc(x0, cy, r, ya < yb ? -Math.PI / 2 : Math.PI / 2, ya < yb ? Math.PI / 2 : -Math.PI / 2, ya < yb);
+      c.stroke();
+    }
+  }
+  c.font = '11px "JetBrains Mono", monospace'; c.fillStyle = '#596773'; c.textAlign = 'left'; c.textBaseline = 'top';
+  c.fillText('eleje', x0 - 2, Yl(0) + lw + 4);
+  $('xsCap').innerHTML = `${XN} hajtás, ${L} réteg. A szín a szalag mentén kékből pirosba vált, így követhető, hogyan tekeredik. A hajtásívek a szaggatott vonalakon kívül eső részek: ez az a papír, amely a hajtásra „elfogy”. A pontos minimális hossz: L(${XN}) = ${fmt(gL(XN) / T, 4)} · t.`;
+}
+const segBox = $('xsSeg');
+segBox.innerHTML = [1, 2, 3, 4, 5, 6].map(k => `<button type="button" data-k="${k}" aria-pressed="${k === XN}">${k}</button>`).join('');
+segBox.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; XN = +b.dataset.k; [...segBox.children].forEach(x => x.setAttribute('aria-pressed', String(+x.dataset.k === XN))); drawXS(); });
+
+/* ================= 3D szimuláció ================= */
+const SIMMAX = 14;
+let sim = null;
+function initSim() {
+  const host = $('sim');
+  if (!window.THREE) { host.innerHTML = '<p class="sim-err">A 3D-nézethez szükséges könyvtár nem töltődött be. Frissítsd az oldalt.</p>'; return; }
+  let renderer;
+  try { renderer = new THREE.WebGLRenderer({antialias: true}); }
+  catch (e) { host.innerHTML = '<p class="sim-err">A böngésző nem támogatja a WebGL-t, ezért a 3D-nézet nem indul el.</p>'; return; }
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  host.appendChild(renderer.domElement);
+  const BG = 0x0f171a;
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(BG);
+  scene.fog = new THREE.Fog(BG, 2000, 9000);
+  const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 50000);
+  camera.position.set(260, 300, 380);
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true; controls.dampingFactor = 0.08; controls.maxPolarAngle = Math.PI * 0.495;
+  let autoFrame = true;
+  controls.addEventListener('start', () => { autoFrame = false; });
+
+  scene.add(new THREE.HemisphereLight(0xf2f0ff, 0x2a3a2e, 0.5));
+  const sun = new THREE.DirectionalLight(0xfff6ee, 0.62);
+  sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.02;
+  scene.add(sun); scene.add(sun.target);
+  const rim = new THREE.DirectionalLight(0x9fb8ff, 0.35); rim.position.set(-300, 200, -400); scene.add(rim);
+
+  const maxAniso = renderer.capabilities.getMaxAnisotropy();
+  // vágólap
+  const mc = document.createElement('canvas'); mc.width = mc.height = 512;
+  { const c = mc.getContext('2d'); c.fillStyle = '#1f3d34'; c.fillRect(0, 0, 512, 512);
+    for (let i = 0; i <= 10; i++) { const p = i * 51.2; c.strokeStyle = i % 5 === 0 ? 'rgba(220,240,225,.30)' : 'rgba(220,240,225,.14)'; c.lineWidth = i % 5 === 0 ? 1.6 : 1; c.beginPath(); c.moveTo(p, 0); c.lineTo(p, 512); c.moveTo(0, p); c.lineTo(512, p); c.stroke(); } }
+  const matTex = new THREE.CanvasTexture(mc); matTex.wrapS = matTex.wrapT = THREE.RepeatWrapping; matTex.repeat.set(200, 200); matTex.anisotropy = maxAniso; matTex.encoding = THREE.sRGBEncoding;
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(20000, 20000), new THREE.MeshStandardMaterial({map: matTex, roughness: 0.95}));
+  ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+
+  // pasztell papír: elöl és hátul más színátmenet, 20 mm-es rács; a textúra a teljes lapot fedi (297 × 210 mm)
+  const SW = 297, SD = 210, TS = 2048;
+  function paperTexture(stops, x0, y0, x1, y1) {
+    const cv = document.createElement('canvas'); cv.width = cv.height = TS;
+    const c = cv.getContext('2d');
+    const g = c.createLinearGradient(x0 * TS, y0 * TS, x1 * TS, y1 * TS);
+    stops.forEach(([p, col]) => g.addColorStop(p, col));
+    c.fillStyle = g; c.fillRect(0, 0, TS, TS);
+    for (let mm = 0; mm <= SW; mm += 20) { const x = Math.round(mm / SW * TS) + .5; c.strokeStyle = mm % 100 === 0 ? 'rgba(60,70,140,.30)' : 'rgba(60,70,140,.15)'; c.lineWidth = mm % 100 === 0 ? 3 : 2; c.beginPath(); c.moveTo(x, 0); c.lineTo(x, TS); c.stroke(); }
+    for (let mm = 0; mm <= SD; mm += 20) { const y = Math.round(mm / SD * TS) + .5; c.strokeStyle = mm % 100 === 0 ? 'rgba(60,70,140,.30)' : 'rgba(60,70,140,.15)'; c.lineWidth = mm % 100 === 0 ? 3 : 2; c.beginPath(); c.moveTo(0, y); c.lineTo(TS, y); c.stroke(); }
+    const t = new THREE.CanvasTexture(cv); t.encoding = THREE.sRGBEncoding; t.anisotropy = maxAniso;
+    return t;
+  }
+  const frontTex = paperTexture([[0, '#ffc9e0'], [0.38, '#dccbff'], [0.72, '#c4dcff'], [1, '#c8f2e0']], 0, 0, 1, 1);
+  const backTex = paperTexture([[0, '#ffd9bd'], [0.4, '#fff0b8'], [0.72, '#c9f1d6'], [1, '#bde6f5']], 1, 0, 0, 1);
+  const sideCache = {}, sideMatCache = {};
+  function sideTex(n) {
+    if (sideCache[n]) return sideCache[n];
+    const L = 2 ** n, cv = document.createElement('canvas'); cv.width = 16; cv.height = 1024;
+    const c = cv.getContext('2d');
+    if (L <= 256) {
+      const bh = 1024 / L;
+      for (let i = 0; i < L; i++) {
+        c.fillStyle = i % 2 ? '#e3d6f2' : '#f6dfeb'; c.fillRect(0, i * bh, 16, bh);
+        if (bh >= 3) { c.fillStyle = 'rgba(90,70,120,.6)'; c.fillRect(0, i * bh, 16, Math.max(1, bh * 0.12)); }
+      }
+    } else {
+      for (let y = 0; y < 1024; y++) { const v = Math.floor(Math.random() * 40); c.fillStyle = `rgb(${232 - v},${210 - v},${238 - v})`; c.fillRect(0, y, 16, 1); }
+    }
+    const t = new THREE.CanvasTexture(cv); t.encoding = THREE.sRGBEncoding; t.anisotropy = maxAniso;
+    return (sideCache[n] = t);
+  }
+  const frontMat = new THREE.MeshStandardMaterial({map: frontTex, roughness: 0.82});
+  const backMat = new THREE.MeshStandardMaterial({map: backTex, roughness: 0.82});
+  const sideMat = n => sideMatCache[n] || (sideMatCache[n] = new THREE.MeshStandardMaterial({map: sideTex(n), roughness: 0.9}));
+  // n = a lap eddigi hajtásainak száma: kihajtott lapnál elöl a színe van felül, hajtás után mindig a hátoldal
+  function mats(n) { const sm = sideMat(n); return [sm, sm, n === 0 ? frontMat : backMat, backMat, sm, sm]; }
+  // a felső/alsó lap UV-ja a lap eredeti síkjára vetített világkoordinátából jön, így a színátmenet hajtás közben is folytonos
+  const UU = x => (x + SW / 2) / SW, VV = z => 1 - (z + SD / 2) / SD;
+  function mapUV(geo, fn) {
+    const p = geo.attributes.position, nr = geo.attributes.normal, uv = geo.attributes.uv;
+    for (let i = 0; i < p.count; i++) {
+      const ny = nr.getY(i); if (Math.abs(ny) < 0.5) continue;
+      const w = fn(p.getX(i), p.getZ(i), ny > 0);
+      uv.setXY(i, UU(w[0]), VV(w[1]));
+    }
+    uv.needsUpdate = true;
+  }
+  function disposeMesh(m) { if (!m) return; scene.remove(m); m.geometry.dispose(); }
+
+  // állapotok mm-ben
+  const hist = [{a: 297, b: 210, h: 0.1, cx: 0, cz: 0, n: 0}];
+  const next = s => s.a >= s.b
+    ? {a: s.a / 2, b: s.b, h: s.h * 2, cx: s.cx - s.a / 4, cz: s.cz, n: s.n + 1}
+    : {a: s.a, b: s.b / 2, h: s.h * 2, cx: s.cx, cz: s.cz - s.b / 4, n: s.n + 1};
+  let stackMesh = null, staticMesh = null, moving = null, anim = null;
+
+  function showStack(s) {
+    disposeMesh(stackMesh);
+    const sgeo = new THREE.BoxGeometry(s.a, s.h, s.b);
+    mapUV(sgeo, (x, z) => [s.cx + x, s.cz + z]);
+    stackMesh = new THREE.Mesh(sgeo, mats(s.n));
+    stackMesh.position.set(s.cx, s.h / 2, s.cz);
+    stackMesh.castShadow = stackMesh.receiveShadow = true;
+    scene.add(stackMesh);
+  }
+  function buildHalves(s) {
+    const xf = s.a >= s.b, A = xf ? s.a / 2 : s.b / 2;
+    const sg = xf ? new THREE.BoxGeometry(s.a / 2, s.h, s.b) : new THREE.BoxGeometry(s.a, s.h, s.b / 2);
+    const sx = xf ? s.cx - s.a / 4 : s.cx, sz = xf ? s.cz : s.cz - s.b / 4;
+    mapUV(sg, (x, z) => [sx + x, sz + z]);
+    staticMesh = new THREE.Mesh(sg, mats(s.n));
+    staticMesh.position.set(sx, s.h / 2, sz);
+    staticMesh.castShadow = staticMesh.receiveShadow = true; scene.add(staticMesh);
+    const geo = xf ? new THREE.BoxGeometry(A, s.h, s.b, 48, 1, 1) : new THREE.BoxGeometry(s.a, s.h, A, 1, 1, 48);
+    if (xf) geo.translate(A / 2, s.h / 2, 0); else geo.translate(0, s.h / 2, A / 2);
+    // a felső lap ott marad, ahol most van; az alsó lap oda képeződik, ahová a hajtás után kerül (tükrözve)
+    mapUV(geo, xf ? (x, z, top) => [top ? s.cx + x : s.cx - x, s.cz + z]
+                  : (x, z, top) => [s.cx + x, top ? s.cz + z : s.cz - z]);
+    const base = Float32Array.from(geo.attributes.position.array);
+    const mesh = new THREE.Mesh(geo, mats(s.n));
+    mesh.castShadow = mesh.receiveShadow = true; scene.add(mesh);
+    moving = {mesh, base, xf, A, s};
+  }
+  function pose(theta) {
+    const {mesh, base, xf, A, s} = moving, pos = mesh.geometry.attributes.position.array;
+    const sb = A * 0.6 * Math.sin(theta);
+    for (let i = 0; i < pos.length; i += 3) {
+      const u = xf ? base[i] : base[i + 2], v = base[i + 1] - s.h;
+      const phi = sb > 1e-9 ? theta * Math.min(1, u / sb) : theta;
+      const cs = Math.cos(phi), sn = Math.sin(phi);
+      const u2 = u * cs - v * sn, v2 = u * sn + v * cs;
+      if (xf) { pos[i] = s.cx + u2; pos[i + 2] = base[i + 2] + s.cz; }
+      else { pos[i] = base[i] + s.cx; pos[i + 2] = s.cz + u2; }
+      pos[i + 1] = s.h + v2;
+    }
+    mesh.geometry.attributes.position.needsUpdate = true;
+    mesh.geometry.computeVertexNormals();
+    mesh.geometry.computeBoundingSphere();
+  }
+  function clearHalves() { disposeMesh(staticMesh); staticMesh = null; if (moving) disposeMesh(moving.mesh); moving = null; }
+
+  const cur = () => hist[hist.length - 1];
+  function fold() {
+    if (anim || cur().n >= SIMMAX) return false;
+    const s = cur(); const ns = next(s);
+    disposeMesh(stackMesh); stackMesh = null;
+    buildHalves(s); pose(0);
+    autoFrame = true;
+    anim = {t0: performance.now(), dur: REDUCED ? 120 : 1100, from: 0, to: Math.PI, done: () => { hist.push(ns); clearHalves(); showStack(ns); hud(); }};
+    hud(ns);
+    return true;
+  }
+  function unfold() {
+    if (anim || hist.length < 2) return;
+    hist.pop(); const s = cur();
+    disposeMesh(stackMesh); stackMesh = null;
+    buildHalves(s); pose(Math.PI);
+    autoFrame = true;
+    anim = {t0: performance.now(), dur: REDUCED ? 120 : 900, from: Math.PI, to: 0, done: () => { clearHalves(); showStack(s); hud(); }};
+    hud(s);
+  }
+  function reset() {
+    if (anim) { anim = null; clearHalves(); }
+    stopAuto();
+    hist.length = 1; showStack(hist[0]); autoFrame = true; hud();
+  }
+  let autoT = null;
+  function stopAuto() { if (autoT) { clearInterval(autoT); autoT = null; $('sAuto').textContent = 'Automatikus hajtogatás'; } }
+  function toggleAuto() {
+    if (autoT) { stopAuto(); return; }
+    if (cur().n >= SIMMAX) reset();
+    $('sAuto').textContent = 'Megállítás';
+    autoT = setInterval(() => { if (!anim) { if (cur().n >= SIMMAX) stopAuto(); else fold(); } }, 120);
+  }
+  function hud(s = cur()) {
+    const L = 2 ** s.n;
+    $('hN').textContent = s.n;
+    $('hL').textContent = new Intl.NumberFormat('hu-HU').format(L);
+    $('hT').textContent = fmtLen(s.h / 1000);
+    $('hA').textContent = `${fmt(s.a, 3)} × ${fmt(s.b, 3)} mm`;
+    const ok = s.n === 0 || gW(s.n) <= A4.b;
+    const st = $('hS'); st.className = 'st ' + (ok ? 'ok' : 'no');
+    st.textContent = s.n === 0 ? 'Kiinduló lap' : ok ? 'Gallivan szerint kivitelezhető' : 'Gallivan szerint lehetetlen (W > 210 mm)';
+    $('sFold').disabled = s.n >= SIMMAX; $('sUnfold').disabled = s.n === 0 && !anim;
+  }
+
+  // keretezés
+  const wantT = new THREE.Vector3();
+  function frameTarget() {
+    const s = cur();
+    const st = anim && moving ? moving.s : s;
+    const a = Math.max(s.a, st.a), b = Math.max(s.b, st.b), h = anim ? st.h * 2 : s.h;
+    const cx = anim && moving ? moving.s.cx : s.cx, cz = anim && moving ? moving.s.cz : s.cz;
+    wantT.set(cx, Math.min(h, s.h) / 2, cz);
+    const r = 0.5 * Math.sqrt(a * a + b * b + h * h);
+    const vf = THREE.MathUtils.degToRad(camera.fov) / 2, hf = Math.atan(Math.tan(vf) * camera.aspect);
+    return r / Math.sin(Math.min(vf, hf)) * 0.95;
+  }
+  function resize() {
+    const w = host.clientWidth, h = host.clientHeight; if (!w || !h) return;
+    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+  }
+  new ResizeObserver(resize).observe(host); resize();
+
+  let visible = true;
+  new IntersectionObserver(es => { visible = es[0].isIntersecting; }).observe(host);
+  let last = performance.now();
+  function loop(now) {
+    requestAnimationFrame(loop);
+    const dt = Math.min((now - last) / 1000, 0.1); last = now;
+    if (!visible) return;
+    if (anim) {
+      const t = clamp((now - anim.t0) / anim.dur, 0, 1);
+      const e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      pose(anim.from + (anim.to - anim.from) * e);
+      if (t >= 1) { const d = anim.done; anim = null; d(); }
+    }
+    const want = frameTarget();
+    if (autoFrame) {
+      const k = 1 - Math.pow(0.02, dt);
+      const off = camera.position.clone().sub(controls.target);
+      controls.target.lerp(wantT, k);
+      const len = off.length();
+      off.setLength(len + (want - len) * k);
+      camera.position.copy(controls.target).add(off);
+    }
+    const dist = camera.position.distanceTo(controls.target);
+    camera.near = Math.max(dist / 400, 0.01); camera.far = dist * 60 + 2000; camera.updateProjectionMatrix();
+    scene.fog.near = dist * 2.5; scene.fog.far = dist * 12;
+    const sr = Math.max(want * 0.6, 50);
+    sun.position.copy(controls.target).add(new THREE.Vector3(0.55, 1, 0.35).multiplyScalar(sr * 2));
+    sun.target.position.copy(controls.target);
+    const sc = sun.shadow.camera; sc.left = -sr; sc.right = sr; sc.top = sr; sc.bottom = -sr; sc.near = 0.1; sc.far = sr * 5; sc.updateProjectionMatrix();
+    controls.update();
+    renderer.render(scene, camera);
+  }
+  showStack(hist[0]); hud();
+  requestAnimationFrame(loop);
+  $('sFold').addEventListener('click', () => { stopAuto(); fold(); });
+  $('sUnfold').addEventListener('click', () => { stopAuto(); unfold(); });
+  $('sReset').addEventListener('click', reset);
+  $('sAuto').addEventListener('click', toggleAuto);
+  $('sFrame').addEventListener('click', () => { autoFrame = true; });
+  sim = {fold};
+}
+
+/* ================= indítás ================= */
+function all() { drawStage(); drawChart(); drawXS(); }
+let rt = null;
+window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(all, 80); });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(all);
+setN(0);
+drawXS();
+initSim();
+})();
+</script>
+</body>
+</html>

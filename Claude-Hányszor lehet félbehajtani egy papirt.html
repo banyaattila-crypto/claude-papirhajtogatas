@@ -6,7 +6,7 @@
 <title>Hányszor lehet félbehajtani egy papírt?</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=JetBrains+Mono:wght@400;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=JetBrains+Mono:wght@400;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&display=swap" rel="stylesheet">
 <style>
 :root{
   /* Irány: mérnöki kockás füzetlap, amely a számlálóban csillagos éggé sötétül; a többi felület csendes. */
@@ -20,6 +20,7 @@
   --ok:#1d8559;
   --f-display:"Archivo","Arial Narrow",system-ui,sans-serif;
   --f-body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --f-title:"Fraunces",Georgia,"Times New Roman",serif;
   --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
   color-scheme:light;
 }
@@ -33,13 +34,13 @@ a{color:var(--accent)}
 @media (max-width:520px){.wrap{padding:0 16px}body{font-size:17px}}
 
 /* ---------- fejléc ---------- */
-header{padding:48px 0 28px}
+header{padding:16px 0 28px}
 .eyebrow{font-family:var(--f-mono);font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
-h1{font-family:var(--f-display);font-stretch:68%;font-weight:850;font-size:clamp(44px,8.4vw,112px);line-height:.9;letter-spacing:-.01em;margin:0;text-transform:uppercase;text-wrap:balance}
+h1{font-family:var(--f-title);font-variation-settings:"SOFT" 60,"WONK" 1;font-weight:800;font-size:clamp(34px,5.2vw,68px);line-height:1.04;letter-spacing:-.02em;margin:0;max-width:20ch;text-wrap:balance}
 h1 .fold{display:inline-block;color:var(--accent);transform-origin:50% 100%}
 .lead{max-width:62ch;font-size:clamp(18px,1.6vw,21px);margin:22px 0 0;color:var(--ink)}
-h2{font-family:var(--f-display);font-stretch:75%;font-weight:800;font-size:clamp(30px,4vw,48px);line-height:1;letter-spacing:-.005em;text-transform:uppercase;margin:0 0 14px;text-wrap:balance}
-h3{font-family:var(--f-display);font-stretch:90%;font-weight:700;font-size:20px;margin:0 0 6px}
+h2{font-family:var(--f-title);font-variation-settings:"SOFT" 50;font-weight:750;font-size:clamp(26px,3.3vw,42px);line-height:1.08;letter-spacing:-.015em;margin:0 0 14px;text-wrap:balance}
+h3{font-family:var(--f-title);font-weight:700;font-size:21px;margin:0 0 6px}
 section{padding:44px 0}
 .sec-head{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin-bottom:22px}
 .sec-head p{max-width:68ch;margin:0;color:var(--muted)}
@@ -83,7 +84,7 @@ section{padding:44px 0}
 .frow{display:grid;grid-template-columns:150px minmax(0,1fr);gap:4px 18px;padding:14px 0;border-top:1px solid var(--rule)}
 .frow:first-of-type{border-top:0;padding-top:4px}
 @media (max-width:560px){.frow{grid-template-columns:minmax(0,1fr)}}
-.flabel{font-family:var(--f-display);font-stretch:85%;font-weight:700;font-size:16px;line-height:1.25}
+.flabel{font-family:var(--f-title);font-weight:650;font-size:17px;line-height:1.25}
 .flabel span{display:block;font-family:var(--f-mono);font-weight:400;font-size:12px;color:var(--muted);margin-top:3px;letter-spacing:.02em}
 .fmath{font-family:var(--f-mono);font-size:15px;line-height:1.7;overflow-x:auto;min-width:0}
 .fmath .s{color:var(--muted)}
@@ -105,9 +106,9 @@ section{padding:44px 0}
 .ladder li:hover{background:rgba(255,255,255,.85)}
 .ladder li.on{border-left-color:var(--accent)}
 .ladder li.cur{background:rgba(214,222,255,.9);border-color:var(--accent)}
-.ladder .nm{font-weight:600;font-size:16px;line-height:1.25}
+.ladder .nm{font-family:var(--f-title);font-weight:650;font-size:16.5px;line-height:1.25}
 .ladder .sz{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);grid-column:1}
-.ladder .nn{font-family:var(--f-display);font-stretch:110%;font-weight:800;font-size:24px;grid-row:1/3;grid-column:2;align-self:center;font-variant-numeric:tabular-nums}
+.ladder .nn{font-family:var(--f-title);font-weight:800;font-size:25px;grid-row:1/3;grid-column:2;align-self:center;font-variant-numeric:tabular-nums}
 .ladder li.on .nn{color:var(--accent)}
 
 /* ---------- keresztmetszet ---------- */
@@ -140,15 +141,15 @@ section{padding:44px 0}
 .tl{position:relative;display:grid;gap:14px;margin:0;padding:0;list-style:none}
 .tl li{display:grid;grid-template-columns:150px minmax(0,1fr);gap:18px;background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:18px 22px}
 @media (max-width:640px){.tl li{grid-template-columns:minmax(0,1fr);gap:6px}}
-.when{font-family:var(--f-display);font-stretch:80%;font-weight:800;font-size:26px;line-height:1.05;color:var(--accent)}
+.when{font-family:var(--f-title);font-weight:750;font-size:24px;line-height:1.1;color:var(--accent)}
 .when span{display:block;font-family:var(--f-mono);font-weight:400;font-size:12px;color:var(--muted);letter-spacing:.04em;margin-top:4px;text-transform:uppercase}
 .tl p{margin:0 0 8px;max-width:72ch}
 .tl p:last-child{margin-bottom:0}
-.tl .big{font-family:var(--f-display);font-stretch:75%;font-weight:800;font-size:22px;color:var(--ink)}
+.tl .big{font-family:var(--f-title);font-weight:700;font-size:22px;line-height:1.2;color:var(--ink)}
 .pull{font-style:italic;color:var(--muted)}
 .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:22px}
 .fact{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:18px 20px}
-.fact .fig{font-family:var(--f-display);font-stretch:110%;font-weight:850;font-size:34px;line-height:1;color:var(--accent);margin-bottom:8px;font-variant-numeric:tabular-nums}
+.fact .fig{font-family:var(--f-title);font-weight:800;font-size:32px;line-height:1;color:var(--accent);margin-bottom:8px;font-variant-numeric:tabular-nums}
 .fact .fig sup{font-size:.55em}
 .fact p{margin:0;font-size:16px}
 
@@ -158,13 +159,39 @@ footer ol{padding-left:22px;margin:0;columns:2 360px;column-gap:40px;font-size:1
 footer li{margin:0 0 6px;break-inside:avoid}
 footer .note{max-width:80ch}
 
-.card,.ladder li,.tl li,.fact{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.card,.ladder li,.tl li,.fact,.vlist li{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-bottom:14px}
+.brand{display:flex;align-items:center;gap:10px;color:var(--ink)}
+#logo{width:104px;height:104px;display:block;filter:drop-shadow(0 10px 14px rgba(80,60,150,.28))}
+.brand b{font-family:var(--f-title);font-variation-settings:"SOFT" 60,"WONK" 1;font-weight:800;font-size:23px;line-height:1.1;display:block;letter-spacing:-.01em}
+.brand span{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.ver{margin-left:auto;display:inline-flex;align-items:center;gap:9px;font-family:var(--f-mono);font-size:13px;font-weight:600;padding:7px 14px;border-radius:999px;background:rgba(255,255,255,.62);border:1px solid var(--rule);color:var(--ink);text-decoration:none;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.ver:hover{background:rgba(255,255,255,.9)}
+.ver i{width:8px;height:8px;border-radius:50%;background:var(--ok);animation:pulse 2.4s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(29,133,89,.55)}70%{box-shadow:0 0 0 9px rgba(29,133,89,0)}100%{box-shadow:0 0 0 0 rgba(29,133,89,0)}}
+#bgfx{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
+.vlist{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.vlist li{display:grid;grid-template-columns:170px minmax(0,1fr);gap:6px 18px;background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:14px 18px}
+@media (max-width:640px){.vlist li{grid-template-columns:minmax(0,1fr)}}
+.vn{font-family:var(--f-title);font-weight:750;font-size:24px;line-height:1.1;color:var(--accent)}
+.vn span{display:block;font-family:var(--f-mono);font-weight:400;font-size:11.5px;color:var(--muted);letter-spacing:.04em;margin-top:5px;text-transform:uppercase}
+section.wrap{padding-top:44px;padding-bottom:12px}
+.vlist p{margin:0 0 6px;font-size:16px}.vlist p:last-child{margin:0}
+.vlist b{font-family:var(--f-title);font-weight:700}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
+<canvas id="bgfx" aria-hidden="true"></canvas>
 
 <header class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <canvas id="logo" width="208" height="208" role="img" aria-label="Forgó 3D logó: egymásra hajtott, kisebbedő papírrétegek"></canvas>
+      <div><b>Papírhajtás</b><span>2ⁿ kalkulátor</span></div>
+    </div>
+    <a class="ver" id="ver" href="#verziok" title="Szemantikus verziózás (SemVer 2.0.0), kiadva: 2026-11-14"><i></i>v1.2.0</a>
+  </div>
   <p class="eyebrow">Exponenciális növekedés · Gallivan-képletek · 3D-szimuláció</p>
   <h1>Hányszor lehet <span class="fold">félbe</span>hajtani egy papírt?</h1>
   <p class="lead">Minden hajtás megduplázza a köteg vastagságát, a hajtáshoz szükséges papír mennyisége viszont négyszereződik. Húzd a csúszkát 100-ig: a 0,1 mm-es irodai lapból előbb toronyház, aztán Hold-távolság, végül több milliárd fényév vastag köteg lesz, legalábbis papíron.</p>
@@ -304,6 +331,21 @@ footer .note{max-width:80ch}
   <div class="facts" id="facts"></div>
 </section>
 </main>
+
+<section class="wrap" id="verziok">
+  <div class="sec-head"><span class="secno">Szemantikus verziózás · SemVer 2.0.0</span><h2>Verziótörténet</h2></div>
+  <ol class="vlist">
+    <li><div class="vn">v1.2.0<span>2026-11-14 · MINOR</span></div><div>
+      <p><b>Hozzáadva.</b> Forgó, rétegesen hajló 3D logó; háttéranimáció (lebegő, félbehajló lapok); verziójelvény és verziótörténet.</p>
+      <p><b>Módosítva.</b> A címek betűtípusa Fraunces; kisebb főcím.</p></div></li>
+    <li><div class="vn">v1.1.0<span>2026-11-14 · MINOR</span></div><div>
+      <p><b>Hozzáadva.</b> Pasztell színátmenetes háttér; kétoldalú pasztell papír a 3D-szimulációban (hajtás után a hátoldal van felül).</p>
+      <p><b>Módosítva.</b> A 3D-nézet megvilágítása, hogy a pasztell ne mosódjon ki; áttetsző, üvegszerű kártyák.</p></div></li>
+    <li><div class="vn">v1.0.0<span>2026-11-14 · első kiadás</span></div><div>
+      <p><b>Hozzáadva.</b> Élő számláló 0–100 hajtásig, képletek behelyettesítéssel, logaritmikus grafikon, kozmikus létra, keresztmetszet-ábra, 3D hajtogatási szimuláció (14 hajtásig), anekdoták és források.</p></div></li>
+  </ol>
+  <p class="note" style="margin-bottom:28px">A verziók a kiadás után kaptak számot: a 2. változat a v1.1.0, a 3. a v1.2.0. Hibajavítás PATCH, új, visszafelé kompatibilis funkció MINOR, tartalmi szerkezetváltás MAJOR.</p>
+</section>
 
 <footer class="wrap">
   <h2>Források</h2>
@@ -944,6 +986,98 @@ function initSim() {
   sim = {fold};
 }
 
+/* ================= forgó 3D logó ================= */
+function initLogo() {
+  const cv = $('logo'); if (!cv || !window.THREE) return;
+  let r;
+  try { r = new THREE.WebGLRenderer({canvas: cv, antialias: true, alpha: true}); } catch (e) { return; }
+  r.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); r.setSize(104, 104, false);
+  r.setClearColor(0x000000, 0); r.outputEncoding = THREE.sRGBEncoding;
+  const sc = new THREE.Scene();
+  const cam = new THREE.PerspectiveCamera(28, 1, 0.1, 50); cam.position.set(0, 1.7, 6.6); cam.lookAt(0, 0, 0);
+  sc.add(new THREE.HemisphereLight(0xffffff, 0xb9a9e8, 0.8));
+  const dl = new THREE.DirectionalLight(0xffffff, 0.65); dl.position.set(2, 4, 3); sc.add(dl);
+  const logo = new THREE.Group(); logo.scale.setScalar(1.42); sc.add(logo);
+  // négy réteg: a szélesség felező-féle csökken, a rétegek egymásra hajtódnak (a „2ⁿ” képe)
+  const COLS = [['#ff86bd', '#c58cff'], ['#c58cff', '#86b4ff'], ['#86b4ff', '#6fdcae'], ['#6fdcae', '#ffd95c']];
+  const SIZES = [1.05, 0.76, 0.54, 0.38], T = 0.13, ANG = 0.5;
+  const layers = [];
+  SIZES.forEach((w, k) => {
+    const [c0, c1] = COLS[k];
+    const g2 = document.createElement('canvas'); g2.width = g2.height = 64;
+    const c = g2.getContext('2d'); const gr = c.createLinearGradient(0, 0, 64, 64); gr.addColorStop(0, c0); gr.addColorStop(1, c1); c.fillStyle = gr; c.fillRect(0, 0, 64, 64);
+    const tex = new THREE.CanvasTexture(g2); tex.encoding = THREE.sRGBEncoding;
+    const top = new THREE.MeshStandardMaterial({map: tex, roughness: 0.65});
+    const edge = new THREE.MeshStandardMaterial({color: new THREE.Color(c1).multiplyScalar(0.7), roughness: 0.8});
+    const layer = new THREE.Group(), hinges = [];
+    [-1, 1].forEach(sg => {
+      const hinge = new THREE.Group();
+      const geo = new THREE.BoxGeometry(w, T * 0.8, w * 0.85);
+      const m = new THREE.Mesh(geo, [edge, edge, top, edge, edge, edge]); m.position.x = sg * w / 2; hinge.add(m);
+      const ln = new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({color: 0x2e2470, transparent: true, opacity: 0.65})); ln.position.copy(m.position); hinge.add(ln);
+      layer.add(hinge); hinges.push(hinge);
+    });
+    logo.add(layer); layers.push({g: layer, h: hinges});
+  });
+  function pose(t) {
+    logo.rotation.y = t * 0.4 + 0.5;
+    logo.rotation.x = 0.3 + 0.04 * Math.sin(t * 0.7);
+    logo.position.y = -0.44 + 0.04 * Math.sin(t * 1.1);
+    const a = ANG + 0.16 * Math.sin(t * 0.8);          // a logó lassan nyílik-záródik, mint egy hajtás
+    layers.forEach((L, k) => { L.g.position.y = k * T / Math.cos(a); L.h[0].rotation.z = -a; L.h[1].rotation.z = a; });
+    r.render(sc, cam);
+  }
+  if (REDUCED) { pose(1.2); return; }
+  let vis = true; new IntersectionObserver(es => { vis = es[0].isIntersecting; }).observe(cv);
+  const t0 = performance.now();
+  (function loop(now) { requestAnimationFrame(loop); if (!vis || document.hidden) return; pose((now - t0) / 1000); })(t0);
+}
+
+/* ================= háttéranimáció: lebegő, félbehajló lapok ================= */
+function initBg() {
+  const cv = $('bgfx'); if (!cv) return;
+  const c = cv.getContext('2d');
+  const PAL = [['#ff9fc8', '#ffcf9f'], ['#bba6ff', '#ff9fc8'], ['#9fd0ff', '#bba6ff'], ['#9fe6c8', '#9fd0ff'], ['#ffe28f', '#ffc2a6']];
+  const BACK = ['#fff0d0', '#dcf7e8', '#dce9ff', '#ffe4f0', '#ece2ff'];
+  let W = 0, H = 0, dpr = 1, sheets = [], seed = 7;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  function build() {
+    dpr = Math.min(devicePixelRatio || 1, 1.5); W = innerWidth; H = innerHeight;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    const n = clamp(Math.round(W / 95), 8, 20); seed = 7; sheets = [];
+    for (let i = 0; i < n; i++) {
+      const d = 0.25 + rnd() * 0.75;
+      sheets.push({x: rnd() * W, y: rnd() * (H + 240), s: 60 + rnd() * 110 * d + 20, d, rot: rnd() * 6.28, rs: (rnd() - 0.5) * 0.18,
+        vy: -(5 + rnd() * 12) * (0.4 + d), vx: (rnd() - 0.5) * 5, ph: rnd() * 6.28, fs: 0.22 + rnd() * 0.3, p: i % PAL.length});
+    }
+    sheets.sort((a, b) => a.d - b.d);
+  }
+  function quad(a, b, c2, d2) { c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.lineTo(c2[0], c2[1]); c.lineTo(d2[0], d2[1]); c.closePath(); }
+  function drawSheet(sh, t) {
+    const f = clamp(0.5 + 0.8 * Math.sin(t * sh.fs + sh.ph), 0, 1);   // 0 sík, 1 összehajtva; a végeken megáll
+    const ang = f * Math.PI, cw = Math.cos(ang), sw = Math.sin(ang);
+    const w = sh.s, h = sh.s * 0.72, hw = w / 2, lift = sw * h * 0.1, wx = hw * cw;
+    const span = H + 240, span2 = W + 240;
+    const x = (((sh.x + sh.vx * t) % span2) + span2) % span2 - 120;
+    const y = ((sh.y + sh.vy * t - scrollY * 0.1 * sh.d) % span + span) % span - 120;
+    c.save(); c.translate(x, y); c.rotate(sh.rot + t * sh.rs); c.globalAlpha = 0.26 + 0.3 * sh.d;
+    const [c0, c1] = PAL[sh.p];
+    const g = c.createLinearGradient(-hw, 0, hw, 0); g.addColorStop(0, c0); g.addColorStop(1, c1);
+    c.fillStyle = g; c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 1;
+    quad([-hw, -h / 2], [0, -h / 2], [0, h / 2], [-hw, h / 2]); c.fill(); c.stroke();
+    quad([0, -h / 2], [wx, -h / 2 - lift], [wx, h / 2 - lift], [0, h / 2]);
+    c.fillStyle = cw >= 0 ? g : BACK[sh.p]; c.fill();
+    c.fillStyle = `rgba(80,60,140,${0.16 * sw})`; c.fill(); c.stroke();
+    c.restore();
+  }
+  function render(t) { c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, W, H); sheets.forEach(s => drawSheet(s, t)); }
+  build(); render(4);
+  let rt2 = null; addEventListener('resize', () => { clearTimeout(rt2); rt2 = setTimeout(() => { build(); render(4); }, 150); });
+  if (REDUCED) return;
+  let T0 = performance.now();
+  (function frame(now) { requestAnimationFrame(frame); if (document.hidden) return; render((now - T0) / 1000); })(T0);
+}
+
 /* ================= indítás ================= */
 function all() { drawStage(); drawChart(); drawXS(); }
 let rt = null;
@@ -952,6 +1086,8 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(all);
 setN(0);
 drawXS();
 initSim();
+initLogo();
+initBg();
 })();
 </script>
 </body>
